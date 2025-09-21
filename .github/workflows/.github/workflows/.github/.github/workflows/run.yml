@@ -1,0 +1,40 @@
+name: YouTube Instagram Researcher
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 9 * * 1'
+
+jobs:
+  run-research:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run researcher script
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          VIDEO_IDS: ${{ secrets.VIDEO_IDS || 'dQw4w9WgXcQ' }}
+          TOP_N: ${{ secrets.TOP_N || '10' }}
+        run: |
+          python youtube_instagram_researcher.py
+
+      - name: Upload CSV results as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-results
+          path: |
+            youtube_commenters_*.csv
+            top_candidates_with_instagram.csv
